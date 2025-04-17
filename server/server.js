@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken'; // New Import
 
 // Load Env
 dotenv.config();
@@ -14,7 +15,8 @@ connectDB();
 
 // Models
 import User from './models/User.js';
-import Skill from './models/Skill.js'; // New Import
+import Skill from './models/Skill.js';
+// import { generateToken } from './controllers/authController.js'; // Not needed in server.js, but imports are typically grouped.
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';

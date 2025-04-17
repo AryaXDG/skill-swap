@@ -18,16 +18,13 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-});
+}, { timestamps: { createdAt: 'createdAt' } }); // <-- MODIFIED: Added timestamps
 
 // Pre-save hook to hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) {
     return next();
   }
-  // We use passwordHash as the field to be compatible with a direct 'passwordHash' set
-  // If we were taking a 'password' field, we'd hash that and store it in 'passwordHash'
-  // Assuming the controller will set 'passwordHash' with the plain text pass temporarily
   const salt = await bcrypt.genSalt(10);
   this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
   next();
