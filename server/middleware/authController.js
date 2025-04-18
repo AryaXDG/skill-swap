@@ -38,10 +38,8 @@ export const registerUser = async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            // Only basic profile fields are returned since they don't exist yet in the schema
-            // We assume basic defaults are available or handled client-side for now.
-            avatarUrl: 'default_avatar_url', // Placeholder from final User.js
-            bio: '' // Placeholder from final User.js
+            avatarUrl: 'default_avatar_url',
+            bio: ''
           },
         },
       });
@@ -54,6 +52,38 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// @desc    Auth user & get token (Login)
+// @route   POST /api/auth/login
+// @access  Public
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (user && (await user.matchPassword(password))) {
+      const token = generateToken(user._id);
+      res.status(200).json({
+        status: "success",
+        data: {
+          token,
+          user: {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            avatarUrl: 'default_avatar_url',
+            bio: ''
+          },
+        },
+      });
+    } else {
+      res.status(401).json({ status: "error", message: "Invalid email or password" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Server error" });
+  }
+};
+
 // Placeholder for later use:
-// export const loginUser = async (req, res) => { /* ... */ };
 // export const getMe = async (req, res) => { /* ... */ };
