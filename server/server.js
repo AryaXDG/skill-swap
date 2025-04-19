@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken'; // New Import
+import jwt from 'jsonwebtoken';
 
 // Load Env
 dotenv.config();
@@ -16,7 +16,10 @@ connectDB();
 // Models
 import User from './models/User.js';
 import Skill from './models/Skill.js';
-// import { generateToken } from './controllers/authController.js'; // Not needed in server.js, but imports are typically grouped.
+
+// Routes (New Import)
+import authRoutes from './routes/authRoutes.js'; 
+// Other routes will be imported later
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -31,6 +34,10 @@ app.use(cors({
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// API Routes (New Route)
+app.use('/api/auth', authRoutes); // New mount point
+// Other routes will be mounted later
 
 // --- Server Listen ---
 const PORT = process.env.PORT || 5000;
