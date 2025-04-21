@@ -18,9 +18,52 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-}, { timestamps: { createdAt: 'createdAt' } }); // <-- MODIFIED: Added timestamps
+  avatarUrl: { // New Field
+    type: String, 
+    default: 'default_avatar_url' 
+  },
+  bio: { // New Field
+    type: String, 
+    maxlength: 500 
+  },
+  online: { // New Field (for Socket.IO tracking, though socket logic comes later)
+    type: Boolean, 
+    default: false 
+  },
+  skills_possessed: [{ // New Field
+    skill: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'Skill',
+      required: true
+    },
+    proficiency: { 
+      type: String, 
+      enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'], 
+      default: 'Intermediate' 
+    }
+  }],
+  skills_seeking: [{ // New Field
+    skill: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'Skill',
+      required: true
+    }
+  }],
+  average_helpfulness: { // New Field
+    type: Number, 
+    default: 0 
+  },
+  average_politeness: { // New Field
+    type: Number, 
+    default: 0 
+  },
+  total_ratings: { // New Field
+    type: Number, 
+    default: 0 
+  },
+}, { timestamps: { createdAt: 'createdAt' } });
 
-// Pre-save hook to hash password
+// Pre-save hook to hash password (Unchanged from Commit 6)
 userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) {
     return next();
@@ -30,7 +73,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to compare passwords
+// Method to compare passwords (Unchanged from Commit 6)
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.passwordHash);
 };
