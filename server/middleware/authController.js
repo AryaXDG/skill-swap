@@ -38,8 +38,8 @@ export const registerUser = async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            avatarUrl: 'default_avatar_url',
-            bio: ''
+            avatarUrl: user.avatarUrl,
+            bio: user.bio
           },
         },
       });
@@ -71,8 +71,8 @@ export const loginUser = async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            avatarUrl: 'default_avatar_url',
-            bio: ''
+            avatarUrl: user.avatarUrl,
+            bio: user.bio
           },
         },
       });
@@ -85,5 +85,24 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Placeholder for later use:
-// export const getMe = async (req, res) => { /* ... */ };
+// @desc    Get user profile (current logged in)
+// @route   GET /api/auth/me
+// @access  Private
+export const getMe = async (req, res) => {
+  try {
+    // req.user is attached by authMiddleware
+    const user = await User.findById(req.user._id)
+      .select('-passwordHash')
+      .populate('skills_possessed.skill')
+      .populate('skills_seeking.skill');
+      
+    if (user) {
+      res.status(200).json({ status: "success", data: user });
+    } else {
+      res.status(404).json({ status: "error", message: "User not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Server error" });
+  }
+};

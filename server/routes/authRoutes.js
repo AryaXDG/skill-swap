@@ -1,14 +1,12 @@
 import express from 'express';
-import { registerUser, loginUser } from '../controllers/authController.js';
+import { registerUser, loginUser, getMe } from '../controllers/authController.js';
 import { registerRules, loginRules, validate } from '../middleware/validationMiddleware.js';
-// authMiddleware import is not needed yet since no routes are protected
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.post('/register', registerRules, validate, registerUser);
 router.post('/login', loginRules, validate, loginUser);
-
-// Placeholder for later use:
-// router.get('/me', authMiddleware, getMe);
+router.get('/me', authMiddleware, getMe); // NEW: Protected route
 
 export default router;
