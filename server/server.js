@@ -19,6 +19,7 @@ import Skill from './models/Skill.js';
 
 // Routes (New Import)
 import authRoutes from './routes/authRoutes.js'; 
+import skillRoutes from './routes/skillRoutes.js'; // NEW Import
 // Other routes will be imported later
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
@@ -35,8 +36,9 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes (New Route)
-app.use('/api/auth', authRoutes); // New mount point
+// API Routes
+app.use('/api/auth', authRoutes); 
+app.use('/api/skills', skillRoutes); // NEW mount point
 // Other routes will be mounted later
 
 // --- Server Listen ---
