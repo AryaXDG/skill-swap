@@ -16,11 +16,13 @@ connectDB();
 // Models
 import User from './models/User.js';
 import Skill from './models/Skill.js';
+import Interaction from './models/Interaction.js'; // NEW Import
 
 // Routes
 import authRoutes from './routes/authRoutes.js'; 
 import skillRoutes from './routes/skillRoutes.js'; 
-import userRoutes from './routes/userRoutes.js'; // NEW Import
+import userRoutes from './routes/userRoutes.js'; 
+// Other routes will be imported later
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -38,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api/auth', authRoutes); 
-app.use('/api/users', userRoutes); // NEW mount point
+app.use('/api/users', userRoutes); 
 app.use('/api/skills', skillRoutes); 
 // Other routes will be mounted later
 
