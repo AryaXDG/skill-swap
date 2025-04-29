@@ -16,7 +16,8 @@ connectDB();
 // Models
 import User from './models/User.js';
 import Skill from './models/Skill.js';
-import Interaction from './models/Interaction.js'; // NEW Import
+import Interaction from './models/Interaction.js';
+import Message from './models/Message.js'; // NEW Import
 
 // Routes
 import authRoutes from './routes/authRoutes.js'; 
