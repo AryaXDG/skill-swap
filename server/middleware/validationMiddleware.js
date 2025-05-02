@@ -13,8 +13,15 @@ export const loginRules = [
   body('password', 'Password is required').exists(),
 ];
 
+export const profileSkillsRules = [ // NEW Rules
+    body('skills_possessed', 'Skills possessed must be an array').isArray(),
+    body('skills_seeking', 'Skills seeking must be an array').isArray(),
+    body('skills_possessed.*.skill', 'Invalid skill ID').isMongoId(),
+    body('skills_possessed.*.proficiency', 'Invalid proficiency').optional().isIn(['Beginner', 'Intermediate', 'Advanced', 'Expert']),
+    body('skills_seeking.*.skill', 'Invalid skill ID').isMongoId(),
+];
+
 // Placeholder rules for later commits:
-// export const profileSkillsRules = [ /* ... */ ];
 // export const ratingRules = [ /* ... */ ];
 
 // --- Validation Handler ---
