@@ -2,8 +2,103 @@ import Interaction from '../models/Interaction.js';
 import User from '../models/User.js';
 import mongoose from 'mongoose';
 
-// Placeholder for later use:
-// export const getMatches = async (req, res) => { /* ... */ };
+// @desc    Get matched users (Core Logic)
+// @route   GET /api/interactions/matches
+// @access  Private
+export const getMatches = async (req, res) => { // NEW Function
+  try {
+    const userA = await User.findById(req.user._id).lean();
+    if (!userA) {
+      return res.status(404).json({ status: "error", message: "User not found" });
+    }
+
+    // Get arrays of ObjectIds for skills
+    const possessedSkillIds = userA.skills_possessed.map(s => s.skill);
+    const seekingSkillIds = userA.skills_seeking.map(s => s.skill);
+
+    if (possessedSkillIds.length === 0 || seekingSkillIds.length === 0) {
+        return res.status(200).json({ status: "success", data: [] }); // No skills to match
+    }
+
+    // Use Aggregation Pipeline to find and score matches
+    const matches = await User.aggregate([
+      // 1. Find all users *except* the current user
+      {
+        $match: {
+          _id: { $ne: userA._id }
+        }
+      },
+      // 2. Add fields for their possessed/seeking skill IDs
+      {
+        $addFields: {
+          user_possessed_skill_ids: { $map: { input: "$skills_possessed", as: "s", in: "$$s.skill" } },
+          user_seeking_skill_ids: { $map: { input: "$skills_seeking", as: "s", in: "$$s.skill" } }
+        }
+      },
+      // 3. Find the intersection between users
+      {
+        $addFields: {
+          // Skills UserB has that I (UserA) am seeking
+          matches_my_seeking: { $setIntersection: ["$user_possessed_skill_ids", seekingSkillIds] },
+          // Skills UserB is seeking that I (UserA) have
+          matches_my_possessed: { $setIntersection: ["$user_seeking_skill_ids", possessedSkillIds] }
+        }
+      },
+      // 4. Count the intersections
+      {
+        $addFields: {
+          matches_my_seeking_count: { $size: "$matches_my_seeking" },
+          matches_my_possessed_count: { $size: "$matches_my_possessed" }
+        }
+      },
+      // 5. Calculate total match score
+      {
+        $addFields: {
+          match_score: { $add: ["$matches_my_seeking_count", "$matches_my_possessed_count"] }
+        }
+      },
+      // 6. Filter *only* for reciprocal matches (both must be > 0)
+      {
+        $match: {
+          matches_my_seeking_count: { $gt: 0 },
+          matches_my_possessed_count: { $gt: 0 }
+        }
+      },
+      // 7. Sort by the highest score
+      {
+        $sort: {
+          match_score: -1
+        }
+      },
+      // 8. Project final fields (remove sensitive data)
+      {
+        $project: {
+          passwordHash: 0,
+          email: 0,
+          user_possessed_skill_ids: 0,
+          user_seeking_skill_ids: 0,
+          matches_my_seeking: 0,
+          matches_my_possessed: 0,
+        }
+      }
+    ]);
+    
+    // Populate the skills for the matched users
+    await User.populate(matches, { 
+        path: 'skills_possessed.skill skills_seeking.skill' 
+    });
+
+    res.status(200).json({ status: "success", data: matches });
+
+  } catch (error) {
+    console.error(error);
+    // Handle specific CastError if user ID is invalid format
+    if (error.name === 'CastError') {
+      return res.status(400).json({ status: "error", message: "Invalid user ID format" });
+    }
+    res.status(500).json({ status: "error", message: "Server error" });
+  }
+};
 
 // @desc    Request an interaction
 // @route   POST /api/interactions/request
@@ -60,7 +155,7 @@ export const getUserInteractions = async (req, res) => {
 // @desc    Respond to an interaction request (accept/decline)
 // @route   PUT /api/interactions/:interactionId/respond
 // @access  Private
-export const respondToInteraction = async (req, res) => { // NEW Function
+export const respondToInteraction = async (req, res) => { 
   const { interactionId } = req.params;
   const { status } = req.body; 
 
