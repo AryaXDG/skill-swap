@@ -18,12 +18,13 @@ import User from './models/User.js';
 import Skill from './models/Skill.js';
 import Interaction from './models/Interaction.js';
 import Message from './models/Message.js';
-import Rating from './models/Rating.js'; // NEW Import
+import Rating from './models/Rating.js';
 
 // Routes
 import authRoutes from './routes/authRoutes.js'; 
 import skillRoutes from './routes/skillRoutes.js'; 
 import userRoutes from './routes/userRoutes.js'; 
+import interactionRoutes from './routes/interactionRoutes.js'; // NEW Import
 // Other routes will be imported later
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
@@ -44,6 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes); 
 app.use('/api/users', userRoutes); 
 app.use('/api/skills', skillRoutes); 
+app.use('/api/interactions', interactionRoutes); // NEW mount point
 // Other routes will be mounted later
 
 // --- Server Listen ---
