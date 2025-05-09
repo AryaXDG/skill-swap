@@ -24,8 +24,8 @@ import Rating from './models/Rating.js';
 import authRoutes from './routes/authRoutes.js'; 
 import skillRoutes from './routes/skillRoutes.js'; 
 import userRoutes from './routes/userRoutes.js'; 
-import interactionRoutes from './routes/interactionRoutes.js'; // NEW Import
-// Other routes will be imported later
+import interactionRoutes from './routes/interactionRoutes.js'; 
+import messageRoutes from './routes/messageRoutes.js'; // NEW Import
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -45,7 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes); 
 app.use('/api/users', userRoutes); 
 app.use('/api/skills', skillRoutes); 
-app.use('/api/interactions', interactionRoutes); // NEW mount point
+app.use('/api/interactions', interactionRoutes); 
+app.use('/api/messages', messageRoutes); // NEW mount point
 // Other routes will be mounted later
 
 // --- Server Listen ---
