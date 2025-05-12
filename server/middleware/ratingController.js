@@ -1,7 +1,7 @@
 import Rating from '../models/Rating.js';
 import Interaction from '../models/Interaction.js';
 import User from '../models/User.js';
-// import mongoose from 'mongoose'; // Not needed yet as aggregation is excluded
+import mongoose from 'mongoose'; // NEW: Required for Object ID in aggregation
 
 // @desc    Add a rating for an interaction
 // @route   POST /api/ratings/:interactionId
@@ -54,13 +54,35 @@ export const addRating = async (req, res) => {
 
     await rating.save();
     
-    // 6. --- Excluded Aggregation Logic (To be added later) ---
-    // The code for fetching and updating user averages is skipped here.
+    // 6. --- Rating Aggregation Logic (NEW) ---
+    // Use aggregation pipeline to get new averages
+    const stats = await Rating.aggregate([
+      { $match: { rated_user_id: new mongoose.Types.ObjectId(rated_user_id) } },
+      {
+        $group: {
+          _id: "$rated_user_id",
+          average_helpfulness: { $avg: "$helpfulness" },
+          average_politeness: { $avg: "$politeness" },
+          total_ratings: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // 7. Update the rated user's profile
+    if (stats.length > 0) {
+      const { average_helpfulness, average_politeness, total_ratings } = stats[0];
+      await User.findByIdAndUpdate(rated_user_id, {
+        average_helpfulness: average_helpfulness.toFixed(2),
+        average_politeness: average_politeness.toFixed(2),
+        total_ratings: total_ratings
+      });
+    }
+    // --- End of NEW Logic ---
 
     res.status(201).json({ status: "success", data: rating });
 
   } catch (error) {
-    console.error(error);
+    console.error('Error in addRating:', error);
     res.status(500).json({ status: "error", message: "Server error" });
   }
 };
