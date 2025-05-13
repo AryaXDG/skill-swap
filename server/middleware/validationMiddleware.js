@@ -13,7 +13,7 @@ export const loginRules = [
   body('password', 'Password is required').exists(),
 ];
 
-export const profileSkillsRules = [ // NEW Rules
+export const profileSkillsRules = [
     body('skills_possessed', 'Skills possessed must be an array').isArray(),
     body('skills_seeking', 'Skills seeking must be an array').isArray(),
     body('skills_possessed.*.skill', 'Invalid skill ID').isMongoId(),
@@ -21,8 +21,11 @@ export const profileSkillsRules = [ // NEW Rules
     body('skills_seeking.*.skill', 'Invalid skill ID').isMongoId(),
 ];
 
-// Placeholder rules for later commits:
-// export const ratingRules = [ /* ... */ ];
+export const ratingRules = [ // NEW Rules
+    body('helpfulness', 'Helpfulness rating (1-5) is required').isFloat({ min: 1, max: 5 }),
+    body('politeness', 'Politeness rating (1-5) is required').isFloat({ min: 1, max: 5 }),
+    body('comment', 'Comment must be under 500 characters').optional().isLength({ max: 500 }).trim().escape(),
+];
 
 // --- Validation Handler ---
 

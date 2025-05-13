@@ -25,7 +25,8 @@ import authRoutes from './routes/authRoutes.js';
 import skillRoutes from './routes/skillRoutes.js'; 
 import userRoutes from './routes/userRoutes.js'; 
 import interactionRoutes from './routes/interactionRoutes.js'; 
-import messageRoutes from './routes/messageRoutes.js'; // NEW Import
+import messageRoutes from './routes/messageRoutes.js';
+import ratingRoutes from './routes/ratingRoutes.js'; // NEW Import
 
 // --- DEFINE CLIENT URL WITH FALLBACK ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -46,8 +47,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes); 
 app.use('/api/skills', skillRoutes); 
 app.use('/api/interactions', interactionRoutes); 
-app.use('/api/messages', messageRoutes); // NEW mount point
-// Other routes will be mounted later
+app.use('/api/messages', messageRoutes);
+app.use('/api/ratings', ratingRoutes); // NEW mount point
 
 // --- Server Listen ---
 const PORT = process.env.PORT || 5000;
