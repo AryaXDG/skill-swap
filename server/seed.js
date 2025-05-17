@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-// import bcrypt from 'bcryptjs'; // Not needed yet
+import bcrypt from 'bcryptjs';
 import Skill from './models/Skill.js';
-// import User from './models/User.js'; // Not needed yet
+import User from './models/User.js';
 import connectDB from './config/db.js';
 import 'dotenv/config';
 
@@ -76,8 +76,44 @@ const skillCategories = {
   ]
 };
 
-// --- Helper Functions for User Generation --- (Removed user-specific helpers)
-// Removed: const firstNames, lastNames, sampleBios, sampleAvatars, getRandomElement, getRandomSubset
+// --- Helper Functions for User Generation (NEW) ---
+
+const firstNames = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Jesse', 'Kai', 'Devin', 'Avery', 'Skyler', 'Quinn', 'Rowan', 'Charlie', 'Finley', 'Dakota', 'Emerson', 'Sage', 'Parker'];
+const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
+
+const sampleBios = [
+  'Full-stack developer passionate about building beautiful and functional web applications. Looking to trade my coding skills for help with public speaking!',
+  'Graphic designer with a love for bold colors and clean lines. I can help you with branding or UI/UX, and I\'d love to learn Python for data analysis.',
+  'Digital marketer specializing in SEO and content strategy. Seeking a skilled photographer to help me build my personal brand.',
+  'Chef by trade, baker by passion. I can teach you the secrets to the perfect sourdough or any French pastry. Looking to learn Spanish!',
+  'Data scientist who loves turning numbers into stories. Eager to swap my R and Python skills for help with creative writing or illustration.',
+  'Yoga instructor and wellness coach. I can help you with mindfulness and flexibility, and I\'m seeking a marketing expert to grow my small business.',
+  'Mechanical engineer who loves tinkering with 3D printers and building robots. I can teach you AutoCAD or Blender in exchange for guitar lessons.',
+  'Fluent in three languages (English, French, Japanese) and a professional translator. I\'m looking to learn woodworking this year.',
+  'Project manager with a PMP certification. I can help you organize any project, big or small. I want to learn video editing for my travel blog.',
+  'Musician and audio engineer. I can produce your podcast or master your new track. Seeking someone to help me build a website for my portfolio.'
+];
+
+const sampleAvatars = [
+  'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/874158/pexels-photo-874158.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1to00&w=100',
+  'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100',
+  'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100&w=100'
+];
+
+const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// Helper to get a random subset of an array
+const getRandomSubset = (arr, count) => {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
 
 // --- Seeder Functions ---
 
@@ -110,9 +146,73 @@ const seedSkills = async () => {
 };
 
 /**
- * @desc Seeds the 'users' collection if it's empty.
+ * @desc Seeds the 'users' collection if it's empty. (NEW)
  */
-// Removed: const seedUsers = async () => { ... }
+const seedUsers = async () => {
+  try {
+    const userCount = await User.countDocuments();
+    if (userCount > 0) {
+      console.log('Users already seeded. Skipping.');
+      return;
+    }
+
+    console.log('No users found. Seeding 100 users...');
+
+    // 1. Get all skill IDs from the DB
+    const allSkills = await Skill.find().select('_id');
+    if (allSkills.length === 0) {
+      console.error('No skills found in database. Cannot seed users.');
+      console.error('Please run the seeder once to seed skills, then run again if users failed.');
+      return;
+    }
+
+    // 2. Hash a default password
+    const defaultPassword = 'password123';
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(defaultPassword, salt);
+    console.log(`All users will have the default password: ${defaultPassword}`);
+
+    // 3. Create 100 user objects
+    const usersToCreate = [];
+    for (let i = 0; i < 100; i++) {
+      const firstName = getRandomElement(firstNames);
+      const lastName = getRandomElement(lastNames);
+      const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}${i}`;
+      const email = `${username}@example.com`;
+
+      // Get random skills for this user
+      const possessedSkillCount = Math.floor(Math.random() * 6) + 5; // 5-10 skills
+      const seekingSkillCount = Math.floor(Math.random() * 6) + 5;   // 5-10 skills
+      
+      const possessedSkills = getRandomSubset(allSkills, possessedSkillCount).map(skill => ({
+        skill: skill._id,
+        proficiency: getRandomElement(PROFICIENCIES)
+      }));
+      
+      const seekingSkills = getRandomSubset(allSkills, seekingSkillCount).map(skill => ({
+        skill: skill._id
+      }));
+
+      usersToCreate.push({
+        username,
+        email,
+        passwordHash: hashedPassword,
+        bio: getRandomElement(sampleBios),
+        avatarUrl: getRandomElement(sampleAvatars),
+        skills_possessed: possessedSkills,
+        skills_seeking: seekingSkills
+      });
+    }
+
+    // 4. Insert all users at once
+    await User.insertMany(usersToCreate);
+    console.log(`Successfully seeded ${usersToCreate.length} users!`);
+
+  } catch (error) {
+    console.error('Error seeding users:', error);
+    throw error;
+  }
+};
 
 
 /**
@@ -126,8 +226,8 @@ const seedDB = async () => {
     // Seed skills first (will skip if already present)
     await seedSkills();
     
-    // Then seed users (will skip if already present)
-    // Removed: await seedUsers();
+    // Then seed users (will skip if already present) (NEW)
+    await seedUsers();
 
     console.log('Database seeding completed successfully.');
 
