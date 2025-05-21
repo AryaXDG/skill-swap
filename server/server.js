@@ -1,6 +1,6 @@
 import express from 'express';
 import http from 'http';
-import { Server } from 'socket.io'; // NEW Import
+import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -35,7 +35,7 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO Setup (NEW)
+// Socket.IO Setup
 const io = new Server(server, {
   cors: {
     origin: CLIENT_URL,
@@ -59,9 +59,9 @@ app.use('/api/interactions', interactionRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/ratings', ratingRoutes);
 
-// --- Socket.IO Logic (NEW) ---
+// --- Socket.IO Logic ---
 
-// Socket.IO Authentication Middleware
+// Socket.IO Authentication Middleware (Unchanged)
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -77,14 +77,33 @@ io.use((socket, next) => {
   }
 });
 
-// Placeholder for connection handler
-io.on('connection', (socket) => {
+// Socket.IO Connection Handler (MODIFIED)
+io.on('connection', async (socket) => {
   console.log(`User connected: ${socket.user.id}`);
-  // No further logic yet
-  
-  socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.user.id}`);
-  });
+
+  try {
+    // 1. Join personal room (for notifications)
+    socket.join(socket.user.id);
+
+    // 2. Update user 'online' status
+    await User.findByIdAndUpdate(socket.user.id, { online: true });
+    socket.broadcast.emit('user_online', { userId: socket.user.id });
+
+    // 3. Handle 'disconnect'
+    socket.on('disconnect', async () => {
+      console.log(`User disconnected: ${socket.user.id}`);
+      try {
+        await User.findByIdAndUpdate(socket.user.id, { online: false });
+        socket.broadcast.emit('user_offline', { userId: socket.user.id });
+      } catch (error) {
+        console.error('Error on disconnect:', error);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in socket connection handler:', error);
+    socket.disconnect();
+  }
 });
 
 
