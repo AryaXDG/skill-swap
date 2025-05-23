@@ -61,7 +61,7 @@ app.use('/api/ratings', ratingRoutes);
 
 // --- Socket.IO Logic ---
 
-// Socket.IO Authentication Middleware (Unchanged)
+// Socket.IO Authentication Middleware
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -77,7 +77,7 @@ io.use((socket, next) => {
   }
 });
 
-// Socket.IO Connection Handler (MODIFIED)
+// Socket.IO Connection Handler
 io.on('connection', async (socket) => {
   console.log(`User connected: ${socket.user.id}`);
 
@@ -89,7 +89,35 @@ io.on('connection', async (socket) => {
     await User.findByIdAndUpdate(socket.user.id, { online: true });
     socket.broadcast.emit('user_online', { userId: socket.user.id });
 
-    // 3. Handle 'disconnect'
+    // 3. Handle 'join_room' (for chats) (NEW)
+    socket.on('join_room', (interaction_id) => {
+      socket.join(interaction_id);
+      console.log(`User ${socket.user.id} joined room ${interaction_id}`);
+    });
+
+    // 4. Handle 'send_message' (NEW)
+    socket.on('send_message', async ({ interaction_id, content }) => {
+      try {
+        // Save message to DB
+        const message = new Message({
+          interaction_id,
+          sender_id: socket.user.id,
+          content,
+        });
+        await message.save();
+
+        // Update interaction's last message timestamp
+        await Interaction.findByIdAndUpdate(interaction_id, { lastMessageAt: new Date() });
+
+        // Emit message to the room
+        io.to(interaction_id).emit('receive_message', message);
+
+      } catch (error) {
+        console.error('Error handling send_message:', error);
+      }
+    });
+
+    // 5. Handle 'disconnect'
     socket.on('disconnect', async () => {
       console.log(`User disconnected: ${socket.user.id}`);
       try {
