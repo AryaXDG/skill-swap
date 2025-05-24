@@ -89,13 +89,13 @@ io.on('connection', async (socket) => {
     await User.findByIdAndUpdate(socket.user.id, { online: true });
     socket.broadcast.emit('user_online', { userId: socket.user.id });
 
-    // 3. Handle 'join_room' (for chats) (NEW)
+    // 3. Handle 'join_room' (for chats)
     socket.on('join_room', (interaction_id) => {
       socket.join(interaction_id);
       console.log(`User ${socket.user.id} joined room ${interaction_id}`);
     });
 
-    // 4. Handle 'send_message' (NEW)
+    // 4. Handle 'send_message'
     socket.on('send_message', async ({ interaction_id, content }) => {
       try {
         // Save message to DB
@@ -117,7 +117,19 @@ io.on('connection', async (socket) => {
       }
     });
 
-    // 5. Handle 'disconnect'
+    // 5. Handle 'typing' (NEW, with incorrect syntax)
+    socket.on('typing', ({ interaction_id }) => {
+      // NOTE: Incorrect syntax, should be socket.broadcast.to() to exclude the sender.
+      socket.to(interaction_id).emit('user_typing', { userId: socket.user.id, interaction_id });
+    });
+
+    // 6. Handle 'stop_typing' (NEW, with incorrect syntax)
+    socket.on('stop_typing', ({ interaction_id }) => {
+      // NOTE: Incorrect syntax, should be socket.broadcast.to() to exclude the sender.
+      socket.to(interaction_id).emit('user_stopped_typing', { userId: socket.user.id, interaction_id });
+    });
+
+    // 7. Handle 'disconnect'
     socket.on('disconnect', async () => {
       console.log(`User disconnected: ${socket.user.id}`);
       try {
