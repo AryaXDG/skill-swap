@@ -14,18 +14,18 @@ dotenv.config();
 import connectDB from './config/db.js';
 connectDB();
 
-// Models
+// Models (for Socket.io logic)
 import User from './models/User.js';
-import Skill from './models/Skill.js';
-import Interaction from './models/Interaction.js';
 import Message from './models/Message.js';
+import Interaction from './models/Interaction.js';
+import Skill from './models/Skill.js';
 import Rating from './models/Rating.js';
 
 // Routes
-import authRoutes from './routes/authRoutes.js'; 
-import skillRoutes from './routes/skillRoutes.js'; 
-import userRoutes from './routes/userRoutes.js'; 
-import interactionRoutes from './routes/interactionRoutes.js'; 
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import skillRoutes from './routes/skillRoutes.js';
+import interactionRoutes from './routes/interactionRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import ratingRoutes from './routes/ratingRoutes.js';
 
@@ -52,10 +52,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
-app.use('/api/auth', authRoutes); 
-app.use('/api/users', userRoutes); 
-app.use('/api/skills', skillRoutes); 
-app.use('/api/interactions', interactionRoutes); 
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/skills', skillRoutes);
+app.use('/api/interactions', interactionRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/ratings', ratingRoutes);
 
@@ -117,16 +117,16 @@ io.on('connection', async (socket) => {
       }
     });
 
-    // 5. Handle 'typing' (NEW, with incorrect syntax)
+    // 5. Handle 'typing' (FIXED syntax)
     socket.on('typing', ({ interaction_id }) => {
-      // NOTE: Incorrect syntax, should be socket.broadcast.to() to exclude the sender.
-      socket.to(interaction_id).emit('user_typing', { userId: socket.user.id, interaction_id });
+      // --- FIX 1 --- (Applied)
+      socket.broadcast.to(interaction_id).emit('user_typing', { userId: socket.user.id, interaction_id });
     });
 
-    // 6. Handle 'stop_typing' (NEW, with incorrect syntax)
+    // 6. Handle 'stop_typing' (FIXED syntax)
     socket.on('stop_typing', ({ interaction_id }) => {
-      // NOTE: Incorrect syntax, should be socket.broadcast.to() to exclude the sender.
-      socket.to(interaction_id).emit('user_stopped_typing', { userId: socket.user.id, interaction_id });
+      // --- FIX 2 --- (Applied)
+      socket.broadcast.to(interaction_id).emit('user_stopped_typing', { userId: socket.user.id, interaction_id });
     });
 
     // 7. Handle 'disconnect'
