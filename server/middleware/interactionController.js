@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 // @desc    Get matched users (Core Logic)
 // @route   GET /api/interactions/matches
 // @access  Private
-export const getMatches = async (req, res) => { // NEW Function
+export const getMatches = async (req, res) => { 
   try {
     const userA = await User.findById(req.user._id).lean();
     if (!userA) {
@@ -181,12 +181,13 @@ export const respondToInteraction = async (req, res) => {
 
     interaction.status = status; 
     
-    // Save and populate the response data
+    // --- Populating the response data (NEW) ---
     await interaction.save();
     const populatedInteraction = await Interaction.findById(interaction._id)
       .populate('participants', 'username avatarUrl online');
+    // --- End of new code ---
     
-    res.status(200).json({ status: "success", data: populatedInteraction }); 
+    res.status(200).json({ status: "success", data: populatedInteraction }); // Sent populated data
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "error", message: "Server error" });
