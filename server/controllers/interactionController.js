@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 // @desc    Get matched users (Core Logic)
 // @route   GET /api/interactions/matches
 // @access  Private
-export const getMatches = async (req, res) => { 
+export const getMatches = async (req, res) => {
   try {
     const userA = await User.findById(req.user._id).lean();
     if (!userA) {
@@ -152,15 +152,16 @@ export const getUserInteractions = async (req, res) => {
   }
 };
 
-// @desc    Respond to an interaction request (accept/decline)
+// @desc    Respond to an interaction request
 // @route   PUT /api/interactions/:interactionId/respond
 // @access  Private
-export const respondToInteraction = async (req, res) => { 
+export const respondToInteraction = async (req, res) => {
   const { interactionId } = req.params;
-  const { status } = req.body; 
+  const { status } = req.body; // <-- 1. CHANGED from 'response' to 'status'
 
+  // 2. CHANGED from 'response' to 'status'
   if (!['matched', 'declined'].includes(status)) { 
-    return res.status(400).json({ status: "error", message: "Invalid response status" }); 
+    return res.status(400).json({ status: "error", message: "Invalid response status" }); // Also updated message
   }
 
   try {
@@ -179,9 +180,11 @@ export const respondToInteraction = async (req, res) => {
         return res.status(400).json({ status: "error", message: "Interaction is not pending" });
     }
 
-    interaction.status = status; 
+    interaction.status = status; // <-- 3. CHANGED from 'response' to 'status'
     
-    // --- Populating the response data (NEW) ---
+    // --- Populating the response data ---
+    // We populate the participants so the client's Redux store
+    // gets the full interaction object, just like fetchInteractions does.
     await interaction.save();
     const populatedInteraction = await Interaction.findById(interaction._id)
       .populate('participants', 'username avatarUrl online');

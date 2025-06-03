@@ -18,19 +18,19 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  avatarUrl: { // New Field
+  avatarUrl: { 
     type: String, 
     default: 'default_avatar_url' 
   },
-  bio: { // New Field
+  bio: { 
     type: String, 
     maxlength: 500 
   },
-  online: { // New Field (for Socket.IO tracking, though socket logic comes later)
+  online: { 
     type: Boolean, 
     default: false 
   },
-  skills_possessed: [{ // New Field
+  skills_possessed: [{ 
     skill: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'Skill',
@@ -42,38 +42,41 @@ const userSchema = new mongoose.Schema({
       default: 'Intermediate' 
     }
   }],
-  skills_seeking: [{ // New Field
+  skills_seeking: [{ 
     skill: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'Skill',
       required: true
     }
   }],
-  average_helpfulness: { // New Field
+  average_helpfulness: { 
     type: Number, 
     default: 0 
   },
-  average_politeness: { // New Field
+  average_politeness: { 
     type: Number, 
     default: 0 
   },
-  total_ratings: { // New Field
+  total_ratings: { 
     type: Number, 
     default: 0 
   },
 }, { timestamps: { createdAt: 'createdAt' } });
 
-// Pre-save hook to hash password (Unchanged from Commit 6)
+// Pre-save hook to hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) {
     return next();
   }
+  // We use passwordHash as the field to be compatible with a direct 'passwordHash' set
+  // If we were taking a 'password' field, we'd hash that and store it in 'passwordHash'
+  // Assuming the controller will set 'passwordHash' with the plain text pass temporarily
   const salt = await bcrypt.genSalt(10);
   this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
   next();
 });
 
-// Method to compare passwords (Unchanged from Commit 6)
+// Method to compare passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.passwordHash);
 };

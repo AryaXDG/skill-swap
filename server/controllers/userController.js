@@ -1,5 +1,5 @@
 import User from '../models/User.js';
-import Rating from '../models/Rating.js'; // This import is necessary for getUserProfile, assuming it was added in a previous commit (Commit 18)
+import Rating from '../models/Rating.js';
 
 // @desc    Get public user profile
 // @route   GET /api/users/:userId
@@ -15,13 +15,8 @@ export const getUserProfile = async (req, res) => {
       return res.status(404).json({ status: "error", message: "User not found" });
     }
 
-    // NOTE: Rating retrieval logic is not included here, as the Rating model (and its controller logic) is added later.
-    // Reverting to the state before the rating retrieval was finalized in the original final file.
-    
-    // We assume the final logic for rating retrieval was introduced later, but for this rollback, we must include 
-    // the Rating model logic based on the userController you provided.
     const ratings = await Rating.find({ rated_user_id: req.params.userId })
-        .populate('rating_user_id', 'username avatarUrl') // Assuming this was introduced with the Rating model (Commit 18)
+        .populate('rating_user_id', 'username avatarUrl')
         .sort({ createdAt: -1 });
 
     res.status(200).json({ 
@@ -67,7 +62,7 @@ export const updateUserProfile = async (req, res) => {
 // @desc    Update user skills
 // @route   PUT /api/users/profile/skills
 // @access  Private
-export const updateUserSkills = async (req, res) => { // NEW Function
+export const updateUserSkills = async (req, res) => {
   const { skills_possessed, skills_seeking } = req.body;
 
   try {

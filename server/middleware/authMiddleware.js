@@ -11,7 +11,6 @@ const authMiddleware = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Attach user ID to request object (without password)
-      // Note: We're selecting the entire user object here, minus the password hash.
       req.user = await User.findById(decoded.id).select('-passwordHash'); 
       
       if (!req.user) {

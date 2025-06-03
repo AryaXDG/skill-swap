@@ -21,7 +21,7 @@ export const profileSkillsRules = [
     body('skills_seeking.*.skill', 'Invalid skill ID').isMongoId(),
 ];
 
-export const ratingRules = [ // NEW Rules
+export const ratingRules = [
     body('helpfulness', 'Helpfulness rating (1-5) is required').isFloat({ min: 1, max: 5 }),
     body('politeness', 'Politeness rating (1-5) is required').isFloat({ min: 1, max: 5 }),
     body('comment', 'Comment must be under 500 characters').optional().isLength({ max: 500 }).trim().escape(),

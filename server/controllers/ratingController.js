@@ -1,7 +1,7 @@
 import Rating from '../models/Rating.js';
 import Interaction from '../models/Interaction.js';
 import User from '../models/User.js';
-import mongoose from 'mongoose'; // NEW: Required for Object ID in aggregation
+import mongoose from 'mongoose';
 
 // @desc    Add a rating for an interaction
 // @route   POST /api/ratings/:interactionId
@@ -54,7 +54,7 @@ export const addRating = async (req, res) => {
 
     await rating.save();
     
-    // 6. --- Rating Aggregation Logic (NEW) ---
+    // 6. --- Rating Aggregation Logic ---
     // Use aggregation pipeline to get new averages
     const stats = await Rating.aggregate([
       { $match: { rated_user_id: new mongoose.Types.ObjectId(rated_user_id) } },
@@ -77,12 +77,11 @@ export const addRating = async (req, res) => {
         total_ratings: total_ratings
       });
     }
-    // --- End of NEW Logic ---
 
     res.status(201).json({ status: "success", data: rating });
 
   } catch (error) {
-    console.error('Error in addRating:', error);
+    console.error(error);
     res.status(500).json({ status: "error", message: "Server error" });
   }
 };

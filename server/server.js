@@ -18,8 +18,6 @@ connectDB();
 import User from './models/User.js';
 import Message from './models/Message.js';
 import Interaction from './models/Interaction.js';
-import Skill from './models/Skill.js';
-import Rating from './models/Rating.js';
 
 // Routes
 import authRoutes from './routes/authRoutes.js';
@@ -117,15 +115,17 @@ io.on('connection', async (socket) => {
       }
     });
 
-    // 5. Handle 'typing' (FIXED syntax)
+    // 5. Handle 'typing'
     socket.on('typing', ({ interaction_id }) => {
-      // --- FIX 1 --- (Applied)
+      // --- FIX 1 ---
+      // The syntax was incorrect. It should be socket.broadcast.to()
       socket.broadcast.to(interaction_id).emit('user_typing', { userId: socket.user.id, interaction_id });
     });
 
-    // 6. Handle 'stop_typing' (FIXED syntax)
+    // 6. Handle 'stop_typing'
     socket.on('stop_typing', ({ interaction_id }) => {
-      // --- FIX 2 --- (Applied)
+      // --- FIX 2 ---
+      // The syntax was incorrect. It should be socket.broadcast.to()
       socket.broadcast.to(interaction_id).emit('user_stopped_typing', { userId: socket.user.id, interaction_id });
     });
 
@@ -152,3 +152,4 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

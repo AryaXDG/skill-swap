@@ -76,7 +76,7 @@ const skillCategories = {
   ]
 };
 
-// --- Helper Functions for User Generation (NEW) ---
+// --- Helper Functions for User Generation ---
 
 const firstNames = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Jesse', 'Kai', 'Devin', 'Avery', 'Skyler', 'Quinn', 'Rowan', 'Charlie', 'Finley', 'Dakota', 'Emerson', 'Sage', 'Parker'];
 const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
@@ -146,7 +146,7 @@ const seedSkills = async () => {
 };
 
 /**
- * @desc Seeds the 'users' collection if it's empty. (NEW)
+ * @desc Seeds the 'users' collection if it's empty.
  */
 const seedUsers = async () => {
   try {
@@ -226,7 +226,7 @@ const seedDB = async () => {
     // Seed skills first (will skip if already present)
     await seedSkills();
     
-    // Then seed users (will skip if already present) (NEW)
+    // Then seed users (will skip if already present)
     await seedUsers();
 
     console.log('Database seeding completed successfully.');
@@ -243,3 +243,4 @@ const seedDB = async () => {
 
 // Run the seeder
 seedDB();
+
